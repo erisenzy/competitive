@@ -1,36 +1,25 @@
 #include <iostream>
-#include <string>
 #include <vector>
-#include <algorithm>
-#include <numeric>
-#define REP(i,n) for (int i=0;i<(n);i++)
-#define ll long long
-#define ull unsigned long long
-int dx[4] = {1, 0, -1, 0};
-int dy[4] = {0, 1, 0, -1};
-
 using namespace std;
-int ct = 0;
-int n,k,s;
-void solve(int k_num,int min_n,int sum_set){
-	for(int i = min_n + 1;i <= n;i++){
-		if(k_num == k-1 && sum_set + i == s){
-			ct++;
-			return;
-		}
-		if(k_num + 1 < k)
-			solve(k_num + 1,i,sum_set + i);
-	}
-	return;
-}
+
+int dp[21][11][156];
 
 int main(){
   cin.tie(0);
   ios::sync_with_stdio(false);
+	int n,k,s;
 	while(cin >> n >> k >> s,n){
-		ct = 0;
-		solve(0,0,0);
-		cout << ct << endl;
+		vector<vector<vector<int> > > dp(n+1,vector<vector<int> >(k+1,vector<int>(s+1,0)));
+		for(int i = 0;i < n;i++)dp[i][0][0] = 1;
+		for(int i = 1;i <= n;i++){
+			for(int j = 1;j <= k;j++){
+				for(int l = 1;l <= s;l++){
+					if(l < i)dp[i][j][l] = dp[i-1][j][l];
+					else dp[i][j][l] = dp[i-1][j][l] + dp[i-1][j-1][l-i];
+				}
+			}
 		}
+		cout << dp[n][k][s] << endl;
+	}
   return 0;
 }
