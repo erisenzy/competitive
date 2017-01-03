@@ -1,27 +1,29 @@
 #include <iostream>
-#define REP(i,n) for (int i=1;i<(n);i++)
-
+/*一回目のループでは重複を数えないために、
+ｓｑが通過するタイミングでdp[0][sq]に１が代入されるため
+sq以下の数との和の組み合わせの数だけ計算していく。
+2回目以降は既に重複を除けているので、普通に計算すればよい
+*/
 using namespace std;
 
-#define N 256
-
+const int N = 32770;
 int main(){
   cin.tie(0);
   ios::sync_with_stdio(false);
-	int a[300000] = { 0 };
-	for(int i = 0;i < N;i++){
-	for(int j = i;j < N;j++){
-	for(int k = j;k < N;k++){
-	for(int l = k;l < N;l++){
-		++a[i*i + j*j + k*k + l*l];
-	}
-	}
-	}
+	int dp[4][N+1] = {};
+	for(int i = 1;i*i <= N;i++){
+		for(int j = 0;j < 3;j++){
+			int sq = i*i;
+			if(j == 0)dp[0][sq] = 1;
+			for(int k = 1;k <= N;k++){
+				if(k + sq >= N)continue;
+				dp[j + 1][k + sq] += dp[j][k];
+			}
+		}
 	}
 	int n;
 	while(cin >> n,n){
-		cout << a[n] << endl;
+		cout << dp[0][n] + dp[1][n] + dp[2][n] + dp[3][n] << endl;
 	}
   return 0;
-
 }
