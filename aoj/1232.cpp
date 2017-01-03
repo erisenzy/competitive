@@ -1,10 +1,10 @@
-#include <bits/stdc++.h>
+#include <iostream>
+#include <vector>
 #define REP(i,n) for (int i=0;i<(n);i++)
 const int N = 30000;
 using namespace std;
 bool a[N];
 vector<int> prime;
-vector<pair<int,double> > primepair;
 void erast(){
 	fill(a,a + N,true);
 	a[0] = a[1] = false;
@@ -18,12 +18,6 @@ void erast(){
 		if(a[i] == false)continue;
 		prime.push_back(i);
 	}
-	REP(i,prime.size()){
-		for(int j = i;j < prime.size();j++){
-			primepair.push_back(make_pair(prime[i]*prime[j],(double)prime[i] / prime[j]));
-		}
-	}
-	sort(primepair.begin(),primepair.end());
 }
 
 int main(){
@@ -32,14 +26,21 @@ int main(){
 	erast();
 	int m,a,b;
 	while(cin>>m>>a>>b,m){
-		double suitable_p = (double)a/b;
-		for(auto itr = lower_bound(primepair.begin(),primepair.end(),make_pair(m,5.0));;itr--){
-			if(itr->first <= m && itr->second >= suitable_p){
-				cout << ceil(sqrt(itr->first*itr->second)) << ' '<< ceil(sqrt(itr->first/itr->second))  << endl;
-				break;
+		int maxpq = 0,maxp = 0,maxq = 0;
+		REP(i,prime.size()){
+			if(prime[i] > m)break;
+			for(int j = i;j < prime.size();j++){
+				int p = prime[i],q = prime[j];
+				if(p <= q && p * q <= m && a*q <= b*p){
+					if(maxpq <= p*q){
+					maxpq = p*q;
+					maxp = p;
+					maxq = q;
+					}
+				}else break;
 			}
-			if(itr == primepair.begin())break;
 		}
+		cout << maxp << ' ' << maxq << endl;
 	}
   return 0;
 }
