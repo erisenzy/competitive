@@ -6,12 +6,16 @@
 using namespace std;
 
 const int INF = 1e9;
-struct edge{ int to,cap,rev;
-	edge(int to,int cap,int rev):to(to),cap(cap),rev(rev){}};
+const int MAX_V = 1010;
+struct edge{ int to,cap,rev;edge(int to,int cap,int rev):to(to),cap(cap),rev(rev){}};
 
-int v,e;
-vector<vector<edge> > G; //グラフの隣接リスト表現
-bool used[1003]; //DFSで既に調べたかどうかのフラグ
+vector<vector<edge> > G(MAX_V); //グラフの隣接リスト表現
+bool used[MAX_V]; //DFSで既に調べたかどうかのフラグ
+
+void add_edge(int from, int to, int cap){
+		G[from].push_back(edge(to,cap,G[to].size()));
+		G[to].push_back(edge(from,0,G[from].size() - 1));
+}
 
 int dfs(int v, int t, int f){
 	if(v == t) return f;
@@ -30,26 +34,26 @@ int dfs(int v, int t, int f){
 	return 0;
 }
 
-int maxflow(int s, int t){
+int max_flow(int s, int t){
 	int flow = 0;
 	for(;;){
-		fill(used,used + e,false);
+		fill(used,used + MAX_V,false);
 		int f = dfs(s,t,INF);
 		if(f == 0)return flow;
 		flow += f;
 	}
 }
+
 int main(){
   cin.tie(0);
   ios::sync_with_stdio(false);
+	int v,e;
 	cin >> v >> e;
-	G.resize(v);
 	REP(i,e){
 		int from,to,cap;
 		cin >> from >> to >> cap;
-		G[from].push_back(edge(to,cap,G[to].size()));
-		G[to].push_back(edge(from,0,G[from].size() -1));
+		add_edge(from,to,cap);
 	}
-	cout << maxflow(0,v-1) << endl;
+	cout << max_flow(0,v-1) << endl;
   return 0;
 }
