@@ -1,4 +1,3 @@
-#include <iostream>
 //最初の行を定めれば後は一意に解を求められる
 //最近やった類題だとarc069d　とか
 #include <iostream>
