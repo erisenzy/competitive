@@ -1,3 +1,9 @@
+/*
+	返り値を求める答えにするver
+	先のバージョンと比べて、簡潔に書ける
+	また、範囲内に[r、l]が含まれている場合を枝刈りしているが、これは先のバージョンでもtpを足すことで可能（本質はあまり変わらない）
+ */
+
 #include <iostream>
 #include <iomanip>
 #include <string>
@@ -25,32 +31,25 @@ const int MOD = 1e9 + 7;
  
 using namespace std;
 int k;
-double r,l,t,e,miss_p,suc_p;
-double ans = 0.0;
-void solve(int tk,double tr,double tl,double tp){
+double r,l,t,e,p;
+double solve(int tk,double tr,double tl){
 	double h = (tr+tl)/2;
-	double n_suc_p = tp*suc_p;
-	double n_miss_p = tp*miss_p;
 	tk--;
-	if(tk == -1){
-		if((tr+tl)/2 >= t-e && (tr+tl)/2 <= t+e)ans+=tp;
-	}else if(t+e<tr&&t+e<tl||t-e>tr&&t-e>tl)return;
-	else if(h < t){
-		solve(tk,h,tl,n_suc_p);
-		solve(tk,tr,h,n_miss_p);
-	}else{
-		solve(tk,h,tl,n_miss_p);
-		solve(tk,tr,h,n_suc_p);
-	}
+	if(tk==-1)
+		if(h >= t-e && h <= t+e)return 1;
+		else return 0;
+	if(tr<=t-e&&tl <=t-e||tr>=t+e&&tl>=t+e)return 0;
+	if(t-e<=tr&&tl<=t+e)return 1;
+	double tmp_p = t <= h ? p : 1-p;
+	double res = tmp_p*solve(tk,h,tl);
+	res+=(1-tmp_p)*solve(tk,tr,h);
+	return res;
 } 
 int main(){
   cin.tie(0);
   ios::sync_with_stdio(false);
-	cin>>k>>r>>l>>miss_p>>e>>t;
-	suc_p = 1.0 - miss_p;
-	double p = 1.0;
-	solve(k,r,l,p);
+	cin>>k>>r>>l>>p>>e>>t;
 	cout.precision(10);
-	cout << fixed << ans << endl;
+	cout << fixed << 	solve(k,r,l) << endl;
   return 0;
 }
