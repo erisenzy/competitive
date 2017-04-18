@@ -48,14 +48,12 @@ struct UnionFind{
 	bool same(int x,int y){return find(x)==find(y);}
 };
 
-int standard_e;
 struct Edge{
 	int u,v,cost;
 	Edge(){}
 };
-
 bool comp(const Edge& e1,const Edge& e2){
-	return abs(standard_e-e1.cost) < abs(standard_e-e2.cost);
+	return e1.cost < e2.cost;
 }
 
 int main(){
@@ -70,33 +68,21 @@ int main(){
 			edge[i].u--;edge[i].v--;
 		}
 		int ans = INF;
+		sort(edge.begin(),edge.end(),comp);
 		REP(i,m){
 			uni.init(n);
-			standard_e = edge[i].cost;
-			int diff_min;
-			int maxc = -INF,minc = INF;
-			sort(edge.begin(),edge.end(),comp);
-			REP(j,m){
+			int maxc = -INF,minc = INF,ct = 0;
+			FOR(j,i,m){
 				Edge e = edge[j];
 				if(!uni.same(e.u,e.v)){
 					uni.unite(e.u,e.v);
 					maxc = max(maxc,e.cost);
 					minc = min(minc,e.cost);
+					ct++;
 				}
 			}
-			diff_min = maxc-minc;
-			bool spanning = true;
-			int common_par;
-			REP(j,n){
-				if(!j){
-					common_par = uni.find(uni.par[j]);
-				}else{
-					if(common_par != uni.find(uni.par[j])){
-						spanning = false;break;
-					}
-				}
-			}
-			if(spanning)ans = min(ans,diff_min);
+			if(ct!=n-1)break;
+			ans = min(ans,maxc-minc);
 		}
 		if(ans == INF)cout << -1 << endl;
 		else cout << ans << endl;
