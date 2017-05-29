@@ -4,6 +4,9 @@
 
 const double EPS = 1e-10;
 #define equals(a,b) (fabs((a) - (b)) < EPS)
+
+using namespace std;
+
 struct Point{
 	double x,y;
 	Point(double x = 0.0,double y =0.0):x(x),y(y){}
@@ -24,6 +27,7 @@ struct Point{
 };
 typedef Point Vector;
 
+
 double norm(Vector a){return a.x*a.x+a.y*a.y;}
 double abs(Vector a){return sqrt(norm(a));}
 
@@ -37,7 +41,6 @@ double cross(Vector a, Vector b){
 	return a.x*b.y - a.y*b.x;
 }
 
-
 struct Segment{
 	Point p1,p2;
 	Segment(Point p1,Point p2):p1(p1),p2(p2){}
@@ -50,6 +53,7 @@ public:
 	Point c;
 	double r;
 	Circle(Point c = Point(), double r = 0.0): c(c),r(r){}
+	Circle(double x,double y, double r = 0.0): c(Point(x,y)),r(r){}
 };
 typedef vector<Point> Polygon;
 
@@ -153,3 +157,41 @@ double getDistance(Segment s1, Segment s2){
 						 min(getDistanceSP(s2, s1.p1), getDistanceSP(s2, s1.p2)));
 }
 
+
+pair<Point, Point> getCrossPoint(Circle c, Line l){
+	//assert(intersect(c,l));
+	Vector pr = project(l,c.c);
+	Vector e = (l.p2 - l.p1)/abs(l.p2 - l.p1);
+	double base = sqrt(c.r*c.r - norm(pr - c.c));
+	return make_pair(pr + e*base, pr - e*base);
+}
+
+// x軸との角度を返す
+double arg(Vector p){return atan2(p.y,p.x);}
+
+// 角度0の直線をr度回転
+Vector polar(double a,double r){return Point(cos(r)*a,sin(r)*a);}
+
+pair<Point, Point> getCrossPoint(Circle c1, Circle c2){
+	//assert(intersect(c1,c2))
+	double d = abs(c1.c-c2.c);//円同士の距離
+	double a = acos((c1.r * c1.r + d*d - c2.r*c2.r)/(2*d*c1.r));//余弦定理で交点と中心間線分のなす角を求める
+	double t = arg(c2.c - c1.c);
+	return make_pair(c1.c + polar(c1.r,t+a),c1.c + polar(c1.r,t-a));
+}
+
+/*
+ * 点の内包
+ * IN 2, ON 1, OUT 0
+ */
+int contains(Polygon& g, Point p){
+	int n = g.size();
+	bool x = false;
+	REP(i,n){
+		Point a = g[i] - p, b = g[(i+1)%n] - p;
+		if(abs(cross(a,b)) < EPS && dot(a,b) < EPS)return 1;
+		if(a.y > b.y) swap(a,b);
+		if(a.y < EPS && EPS < b.y && cross(a,b) > EPS) x = !x;
+	}
+	return x ? 2 : 0;
+}
