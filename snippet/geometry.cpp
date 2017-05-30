@@ -57,6 +57,16 @@ public:
 };
 typedef vector<Point> Polygon;
 
+double getArea(Polygon g){
+	double ans = 0.0;
+	int n = g.size();
+	for(int i=0;i<n;i++){
+		ans+=cross(Vector(g[i]), Vector(g[(i+1)%n]));
+	}
+	return fabs(ans)/2;
+}
+
+
 bool isOrthgonal(Vector a, Vector b){
 	return equals(dot(a,b),0.0);
 }
@@ -157,7 +167,6 @@ double getDistance(Segment s1, Segment s2){
 						 min(getDistanceSP(s2, s1.p1), getDistanceSP(s2, s1.p2)));
 }
 
-
 pair<Point, Point> getCrossPoint(Circle c, Line l){
 	//assert(intersect(c,l));
 	Vector pr = project(l,c.c);
@@ -172,12 +181,26 @@ double arg(Vector p){return atan2(p.y,p.x);}
 // 角度0の直線をr度回転
 Vector polar(double a,double r){return Point(cos(r)*a,sin(r)*a);}
 
+// 円同士の交点を返す
 pair<Point, Point> getCrossPoint(Circle c1, Circle c2){
 	//assert(intersect(c1,c2))
 	double d = abs(c1.c-c2.c);//円同士の距離
 	double a = acos((c1.r * c1.r + d*d - c2.r*c2.r)/(2*d*c1.r));//余弦定理で交点と中心間線分のなす角を求める
 	double t = arg(c2.c - c1.c);
 	return make_pair(c1.c + polar(c1.r,t+a),c1.c + polar(c1.r,t-a));
+}
+
+/*
+ * 凸性判定
+ * 凸性は180度以下の条件なので、直線上は全て許される
+ */
+bool isConvex(Polygon g){
+	int n = g.size();
+	REP(i,n){
+		int tmpccw = ccw(g[i],g[(i+1)%n],g[(i+2)%n]);
+		if(tmpccw == CLOCKWISE)return false;
+	}
+	return true;
 }
 
 /*
@@ -194,4 +217,41 @@ int contains(Polygon& g, Point p){
 		if(a.y < EPS && EPS < b.y && cross(a,b) > EPS) x = !x;
 	}
 	return x ? 2 : 0;
+}
+
+/*
+ * y軸優先昇順
+ */
+bool compare(const Point& a,const Point& b){
+	if(a.y == b.y)return a.x < b.x;
+	return a.y < b.y;
+}
+/*
+ * 凸包を求める(アンドリューのアルゴリズム)
+ */
+Polygon andrewScan(Polygon g){
+	Polygon u,l;
+	if(g.size() < 3) return g;
+	sort(g.begin(),g.end(),compare);//compareなしでx軸優先昇順
+	u.push_back(g[0]);
+	u.push_back(g[1]);
+	l.push_back(g[g.size() - 1]);
+	l.push_back(g[g.size() - 2]);
+	// 凸包の上部を生成
+	for(int i =2;i < g.size();i++){
+		for(int n = u.size();n>=2&&ccw(u[n-2],u[n-1],g[i]) == COUNTER_CLOCKWISE;n--){
+			u.pop_back();
+		}
+		u.push_back(g[i]);
+	}
+	// 凸包の下部を生成
+	for(int i = g.size() - 3;i >= 0;i--){
+		for(int n = l.size();n>=2&&ccw(l[n-2],l[n-1],g[i])==COUNTER_CLOCKWISE;n--){
+			l.pop_back();
+		}
+		l.push_back(g[i]);
+	}
+		reverse(l.begin(),l.end());
+	for(int i = u.size() - 2;i>=1;i--)l.push_back(u[i]);
+	return l;
 }
