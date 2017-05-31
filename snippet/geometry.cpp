@@ -255,3 +255,65 @@ Polygon andrewScan(Polygon g){
 	for(int i = u.size() - 2;i>=1;i--)l.push_back(u[i]);
 	return l;
 }
+
+
+// 端点の種類
+#define BOTTOM 0
+#define LEFT 1
+#define RIGHT 2
+#define TOP 3
+
+class EndPoint{
+public:
+	Point p;
+	int seg, st;
+	EndPoint(){}
+	EndPoint(Point p,int seg,int st):p(p),seg(seg),st(st){}
+
+	bool operator < (const EndPoint &ep) const{
+		// y座標が小さい順に整列
+		if(p.y == ep.p.y){
+			return st < ep.st;
+		}else return p.y < ep.p.y;
+	}
+};
+
+EndPoint EP[2 * 1000000]; //端点のリスト
+
+//線分交差問題：マンハッタン幾何
+int manhattanIntersection(vector<Segment> S){
+	int n = S.size();
+
+	for(int i = 0,k = 0;i < n;i++){
+		// 端点のp1,p2が左下を基準に並ぶように調整
+		if(S[i].p1.y == S[i].p2.y){
+			if(S[i].p1.x > S[i].p2.x)swap(S[i].p1,S[i].p2);
+		}else if(S[i].p1.y > S[i].p2.y)swap(S[i].p1,S[i].p2);
+
+		if(S[i].p1.y == S[i].p2.y){
+			EP[k++] = EndPoint(S[i].p1, i, LEFT);
+			EP[k++] = EndPoint(S[i].p2, i, RIGHT);
+		}else{
+			EP[k++] = EndPoint(S[i].p1, i, BOTTOM);
+			EP[k++] = EndPoint(S[i].p2, i, TOP);
+		}
+	}
+
+	sort(EP,EP + 2*n); // 端点のy座標に関して昇順に整列
+
+	set<int> BT; // 二分探索木
+	BT.insert((int)1e9 + 1); //番兵を設置
+	int cnt = 0;
+
+	for(int i = 0;i < 2*n;i++){
+		if(EP[i].st == TOP) BT.erase(EP[i].p.x); // 上端点を削除
+		else if(EP[i].st == BOTTOM)BT.insert(EP[i].p.x); // 下端点を追加
+		else if(EP[i].st == LEFT){
+			set<int>::iterator b = lower_bound(BT.begin(), BT.end(), S[EP[i].seg].p1.x); // O(log n)
+			set<int>::iterator e = upper_bound(BT.begin(), BT.end(), S[EP[i].seg].p2.x); // O(log n)
+			cnt += distance(b,e); //bとeの距離（点の数）を加算,O(k)
+		}
+	}
+	return cnt;
+}
+
