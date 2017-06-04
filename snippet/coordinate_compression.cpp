@@ -10,7 +10,8 @@ using namespace std;
 
 //元の値を容易に参照できる圧縮
 //関数ではなくmain内で使う
-int a(vector<int>& x, vector<int>& y){
+//重複を許し、同値は同index
+void compressAndRestoration(vector<int>& x, vector<int>& y){
     int N = x.size();
     map<int, int> mpx, mpy;
     map<int, int> rmpx, rmpy;//元の座標を呼び出す用
@@ -39,22 +40,6 @@ int a(vector<int>& x, vector<int>& y){
         X[i] = mpx[x[i]];
         Y[i] = mpy[y[i]];
     }
-}
-int compress(vector<int>& x1,int w){
-	vector<int> xs;
-    int n = x1.size();
-	REP(i,n){
-		FOR(d,-1,2){
-			int tx1 = x1[i] + d;
-			if(tx1 >=0 && tx1 <= w)xs.push_back(tx1);
-		}
-	}
-	sort(xs.begin(),xs.end());
-	xs.erase(unique(xs.begin(),xs.end()),xs.end());
-	REP(i,n){
-		x1[i] = find(xs.begin(),xs.end(),x1[i])-xs.begin();
-	}
-	return xs.size();
 }
 
 
